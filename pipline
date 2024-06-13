@@ -1,0 +1,26 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = '0800911680/kubernetes'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Pull git repository from “main” branch
+                checkout([$class: 'GitSCM', branches: [[name: 'main']], userRemoteConfigs: [[url: 'https://github.com/KaranBoob/devops-test.git']]])
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Use 'bat' instead of 'sh' for Windows shell commands
+                   COMMIT_ID = powershell(script: 'git rev-parse --short=5 HEAD', returnStdout: true).trim()
+                    // Use 'bat' for Docker commands as well
+                    bat "docker build -t ${DOCKER_IMAGE}:${COMMIT_ID} ."
+                }
+            }
+        }
+    }
+}
